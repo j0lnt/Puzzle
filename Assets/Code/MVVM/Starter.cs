@@ -8,6 +8,8 @@ namespace MVVM
         #region Fields
 
         private ResourceLoader _resourceLoader;
+        private ILevelModel _levelModel;
+        private ILevelViewModel _levelViewModel;
 
         #endregion
 
@@ -17,6 +19,9 @@ namespace MVVM
         private void Awake()
         {
             _resourceLoader = new ResourceLoader();
+
+            _levelModel = new LevelModel();
+            _levelViewModel = new LevelViewModel(_levelModel);
         }
 
         //private void Update()

@@ -2,6 +2,7 @@
 {
     internal interface ILevelModel
     {
-        IPlayingFieldModel PlayingField { get; }
+        int[] FieldSize { get; }
+        int[,] FieldMap { get; }
     }
 }

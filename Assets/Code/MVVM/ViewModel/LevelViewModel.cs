@@ -17,5 +17,21 @@
         }
 
         #endregion
+
+
+        #region Methods
+
+
+        public void RestartButtonHandle()
+        {
+            throw new System.NotImplementedException("Restart button not implemented");
+        }
+
+        public void MenuButtonHadle()
+        {
+            throw new System.NotImplementedException("Menu button not implemented");
+        }
+
+        #endregion
     }
 }

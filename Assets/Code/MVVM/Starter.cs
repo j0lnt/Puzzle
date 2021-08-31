@@ -20,7 +20,7 @@ namespace MVVM
         {
             _resourceLoader = new ResourceLoader();
 
-            _levelModel = new LevelModel();
+            _levelModel = new LevelModel(10,10);
             _levelViewModel = new LevelViewModel(_levelModel);
         }
 

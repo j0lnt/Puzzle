@@ -19,7 +19,7 @@ namespace MVVM
 
         #region ClassLifeCycles
 
-        internal ResourceLoader(string prefabsPath = "Prefabs", string spritesPath = "Sprites")
+        internal ResourceLoader(string prefabsPath = "Prefabs/", string spritesPath = "Sprites/")
         {
             _prefabs = new Dictionary<string, GameObject>();
             _sprites = new Dictionary<string, Sprite>();

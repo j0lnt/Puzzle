@@ -7,12 +7,11 @@ namespace MVVM
     {
         ILevelModel LevelModel { get; }
 
-        void GenerateFieldMap(ILevelModel levelModel, bool isEmpty);
-        void InstantiateView(ILevelViewModel levelViewModel);
+        void InstantiateView(ILevelViewModel levelViewModel, int cellCount, bool isEmpty);
         void RestartButtonHandle();
         void MenuButtonHandle();
 
-        List<LevelView> Views { get; }
+        List<ILevelView> Views { get; }
         int[,] FieldMap { get; }
         bool IsEmpty { get; }
     }

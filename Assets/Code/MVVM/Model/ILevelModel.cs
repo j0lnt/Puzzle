@@ -1,7 +1,10 @@
-﻿namespace MVVM
+﻿using UnityEngine;
+
+namespace MVVM
 {
     internal interface ILevelModel
     {
-        int[] FieldSize { get; }
+        GameObject LevelViewPrefab { get; }
+        int [] FieldSize { get; }
     }
 }

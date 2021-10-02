@@ -15,8 +15,8 @@ namespace MVVM
         #region Properties
 
         public ILevelModel LevelModel { get; }
-        public List<LevelView> Views { get; private set; }
-        public int[,] FieldMap { get; private set; }
+        public List<ILevelView> Views { get; private set; }
+        public int[,] FieldMap { get; private set; } 
         public bool IsEmpty { get; }
 
         #endregion
@@ -24,16 +24,16 @@ namespace MVVM
 
         #region ClassLifeCycles
 
-        internal LevelViewModel(ILevelModel model, bool isEmpty = false)
+        internal LevelViewModel(ILevelModel model, bool isEmpty = true)
         {
-            Views = new List<LevelView>();
+            Views = new List<ILevelView>();
             
             LevelModel = model;
             IsEmpty = isEmpty;
 
-            GenerateFieldMap(LevelModel, IsEmpty);
+            var cellCount = LevelModel.FieldSize[0] * LevelModel.FieldSize[1];
 
-            InstantiateView(this);
+            InstantiateView(this, cellCount, IsEmpty);
         }
 
         #endregion
@@ -41,27 +41,13 @@ namespace MVVM
 
         #region Methods
 
-        public void GenerateFieldMap(ILevelModel levelModel, bool isEmpty)
+        public void InstantiateView(ILevelViewModel levelViewModel, int cellCount, bool isEmpty)
         {
-            if (!isEmpty) RandomFieldMap(levelModel.FieldSize);
-        }
-
-        private void RandomFieldMap(int[] size)
-        {
-            FieldMap = new int[size[0], size[1]];
-            for (int i = 0; i < size[0]; i++)
-            {
-                for (int j = 0; j < size[1]; j++)
-                {
-                    FieldMap[i, j] = _random.Next(0, 2);
-                }
-            }
-        }
-
-        public void InstantiateView(ILevelViewModel levelViewModel)
-        {
-            var view = new LevelView();
-            view.Initialize(levelViewModel);
+            
+            var go = UnityEngine.GameObject.Instantiate(levelViewModel.LevelModel.LevelViewPrefab);
+            var view = go.GetComponent<ILevelView>();
+            //view.MainCanvas.enabled = false;
+            view.Initialize(levelViewModel, cellCount, isEmpty);
 
             Views.Add(view);
         }

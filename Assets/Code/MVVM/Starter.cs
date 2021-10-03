@@ -23,26 +23,21 @@ namespace MVVM
             _executables = new List<IExecutable>();
             _resourceLoader = new ResourceLoader();
 
-            _executables.Add(new InputViewModel(new AndroidInput()));
+            var input = new InputViewModel(new AndroidInput());
+
+            _executables.Add(input);
 
             _levelModel = new LevelModel(_resourceLoader.LoadPrefab("level_ui_template"));
-            _levelViewModel = new LevelViewModel(_levelModel);
+            _levelViewModel = new LevelViewModel(_levelModel, input.Input, transform);
 
         }
 
         private void Update()
         {
-            if (Input.touchCount > 0)
+            foreach (var executable in _executables)
             {
-                var touch = Input.GetTouch(0);
-                Vector3 touchPosition = Camera.main.ScreenToWorldPoint(touch.position);
-                touchPosition.z = 0f;
-                transform.position = touchPosition;
+                executable.Execute(Time.deltaTime);
             }
-            //foreach (var executable in _executables)
-            //{
-            //    executable.Execute(Time.deltaTime);
-            //}
         }
 
         #endregion

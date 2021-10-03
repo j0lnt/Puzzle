@@ -30,8 +30,7 @@
 
         public void Execute(float deltaTime)
         {
-            _input.GetAxisOnChange(deltaTime);
-            _input.GetTouch(deltaTime);
+            _input.GetTouch();
         }
 
         #endregion

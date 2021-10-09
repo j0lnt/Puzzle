@@ -1,5 +1,6 @@
 ﻿using System;
 using UnityEngine;
+using UnityEngine.EventSystems;
 
 
 namespace MVVM
@@ -9,6 +10,17 @@ namespace MVVM
         #region Properties
 
         public event Action<Touch[]> TouchOnComplete;
+        public CustomStandaloneInputModule StandaloneInputModule { get; }
+
+        #endregion
+
+
+        #region ClassLifeCycles
+
+        internal AndroidInput(CustomStandaloneInputModule standaloneInputModule)
+        {
+            StandaloneInputModule = standaloneInputModule;
+        }
 
         #endregion
 

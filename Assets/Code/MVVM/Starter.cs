@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.EventSystems;
 
 
 namespace MVVM
@@ -7,6 +8,8 @@ namespace MVVM
     internal sealed class Starter : MonoBehaviour
     {
         #region Fields
+
+        public CustomStandaloneInputModule CustomStandaloneInputModule;
 
         private ResourceLoader _resourceLoader;
         private ILevelModel _levelModel;
@@ -23,7 +26,7 @@ namespace MVVM
             _executables = new List<IExecutable>();
             _resourceLoader = new ResourceLoader();
 
-            var input = new InputViewModel(new AndroidInput());
+            var input = new InputViewModel(new AndroidInput(CustomStandaloneInputModule));
 
             _executables.Add(input);
 

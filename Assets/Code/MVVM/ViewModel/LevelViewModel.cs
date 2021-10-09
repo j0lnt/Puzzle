@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.EventSystems;
 
 
 namespace MVVM
@@ -9,6 +10,9 @@ namespace MVVM
         #region Fields
 
         private System.Random _random = new System.Random();
+
+        private RaycastHit _raycastHit;
+        private Vector3 _rayCastPosition;
 
         #endregion
 
@@ -28,6 +32,9 @@ namespace MVVM
 
         internal LevelViewModel(ILevelModel model, IInputProxy input, bool isEmpty = true)
         {
+            _rayCastPosition = Vector3.forward;
+            _rayCastPosition.z = Camera.main.farClipPlane;
+
             Views = new List<ILevelView>();
 
             LevelModel = model;
@@ -53,7 +60,7 @@ namespace MVVM
         public void InstantiateView(ILevelViewModel levelViewModel, int cellCount, bool isEmpty)
         {
             
-            var go = UnityEngine.GameObject.Instantiate(levelViewModel.LevelModel.LevelViewPrefab);
+            var go = GameObject.Instantiate(levelViewModel.LevelModel.LevelViewPrefab);
             var view = go.GetComponent<ILevelView>();
             view.Initialize(levelViewModel, cellCount, isEmpty);
             view.MainCanvas.enabled = true;
@@ -68,13 +75,17 @@ namespace MVVM
 
         public void RestartButtonHandle()
         {
+            #if !UNITY_EDITOR && UNITY_ANDROID
             ShowAndroidToastMessage("Restart button not implemented");
+            #endif
             throw new System.NotImplementedException("Restart button not implemented");
         }
 
         public void MenuButtonHandle()
         {
+            #if !UNITY_EDITOR && UNITY_ANDROID
             ShowAndroidToastMessage("Menu button not implemented");
+            #endif
             throw new System.NotImplementedException("Menu button not implemented");
         }
 
@@ -83,11 +94,23 @@ namespace MVVM
             for (int i = 0; i < touches.Length; i++)
             {
                 Vector3 touchPosition = Camera.main.ScreenToWorldPoint(Input.touches[i].position);
-                touchPosition.z = 0f;
-                Debug.DrawRay(Camera.main.transform.position, touchPosition);
+                touchPosition.z = Camera.main.transform.position.z;
+                Debug.DrawRay(touchPosition, _rayCastPosition);
+
+                if (Views[0].HideCellByName(PlayerInput.StandaloneInputModule.GetHovered().name))
+                {
+                    Debug.Log($"{PlayerInput.StandaloneInputModule.GetHovered().name} hided");
+                    #if !UNITY_EDITOR && UNITY_ANDROID
+                    ShowAndroidToastMessage($"{PlayerInput.StandaloneInputModule.GetHovered().name} hided");
+                    #endif
+                }
+                //Debug.Log($"{PlayerInput.StandaloneInputModule.GetHovered().name}");
+                
             }
         }
 
+
+        #if !UNITY_EDITOR && UNITY_ANDROID
         private void ShowAndroidToastMessage(string message)
         {
             AndroidJavaClass unityPlayer = new AndroidJavaClass("com.unity3d.player.UnityPlayer");
@@ -103,6 +126,7 @@ namespace MVVM
                 }));
             }
         }
+        #endif
 
         #endregion
     }

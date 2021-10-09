@@ -9,12 +9,12 @@ namespace MVVM
     {
         #region Methods
 
-        public GameObject GetHovered()
+        public RaycastResult GetRaycastFromPointer()
         {
             var mouseEvent = GetLastPointerEventData(0);
             if (mouseEvent == null)
-                return null;
-            return mouseEvent.pointerCurrentRaycast.gameObject;
+                return new RaycastResult() {  };
+            return mouseEvent.pointerCurrentRaycast;
         }
 
         public List<GameObject> GetAllHovered()

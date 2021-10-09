@@ -12,6 +12,7 @@ namespace MVVM
         public CustomStandaloneInputModule CustomStandaloneInputModule;
 
         private ResourceLoader _resourceLoader;
+        private InputViewModel _input;
         private ILevelModel _levelModel;
         private ILevelViewModel _levelViewModel;
         private List<IExecutable> _executables;
@@ -26,12 +27,12 @@ namespace MVVM
             _executables = new List<IExecutable>();
             _resourceLoader = new ResourceLoader();
 
-            var input = new InputViewModel(new AndroidInput(CustomStandaloneInputModule));
+            _input = new InputViewModel(new AndroidInput(CustomStandaloneInputModule));
 
-            _executables.Add(input);
+            _executables.Add(_input);
 
             _levelModel = new LevelModel(_resourceLoader.LoadPrefab("level_ui_template"));
-            _levelViewModel = new LevelViewModel(_levelModel, input.Input, transform);
+            _levelViewModel = new LevelViewModel(_levelModel, _input, transform);
 
         }
 

@@ -17,7 +17,7 @@ namespace MVVM
         [SerializeField] private Sprite _cellSprite;
         [SerializeField] private GridLayoutGroup _playingField;
 
-        private Dictionary<string, Image> _cells;
+        private Dictionary<int, GameObject> _cells;
 
         #endregion
 
@@ -44,6 +44,7 @@ namespace MVVM
         ~LevelView()
         {
             RemoveAllListeners();
+            _levelViewModel.OnCellChange -= ChangeGameObject;
         }
 
         #endregion
@@ -55,41 +56,38 @@ namespace MVVM
         {
 
             _levelViewModel = levelViewModel;
+            _levelViewModel.OnCellChange += ChangeGameObject;
 
             RemoveAllListeners();
 
             _menuButton.onClick.AddListener(()=> _levelViewModel.MenuButtonHandle());
             _restartButton.onClick.AddListener(()=> _levelViewModel.RestartButtonHandle());
 
-            _cells = new Dictionary<string, Image>();
+            _cells = new Dictionary<int, GameObject>();
             for (int i = 0; i < cellCount; i++)
             {
                 var newCell = new GameObject();
                 newCell.name = $"cell-{i}";
                 newCell.transform.SetParent(_playingField.transform);
+                newCell.layer = 8;
                 var cellImage = newCell.AddComponent<Image>();
                 cellImage.sprite = _cellSprite;
                 cellImage.color = Color.gray;
-                _cells.Add(newCell.name, cellImage);
+                _cells.Add(newCell.GetInstanceID(), newCell);
             }
 
             MainCanvas.enabled = false;
+        }
+
+        private void ChangeGameObject(int id)
+        {
+            _cells[id].GetComponent<Image>().color = Color.red;
         }
 
         private void RemoveAllListeners()
         {
             _menuButton.onClick.RemoveAllListeners();
             _restartButton.onClick.RemoveAllListeners();
-        }
-
-        public bool HideCellByName(string name)
-        {
-            var isHided = !_cells[name].enabled;
-            if (!isHided)
-            {
-                _cells[name].enabled = false;
-            }
-            return isHided;
         }
 
         #endregion

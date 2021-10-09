@@ -1,4 +1,7 @@
-﻿using UnityEngine;
+﻿using System;
+using System.Collections.Generic;
+using UnityEngine;
+
 
 namespace MVVM
 {
@@ -6,8 +9,10 @@ namespace MVVM
     {
         #region Properties
 
-        public GameObject LevelViewPrefab { get; private set; }
-        public int[] FieldSize { get; private set; }
+        public GameObject LevelViewPrefab { get; }
+        public Dictionary<int, CellState> FieldState { get; }
+        public int[] FieldSize { get; }
+        public event Action<int, CellState> OnCellStateChanged;
 
         #endregion
 
@@ -18,6 +23,7 @@ namespace MVVM
         {
             LevelViewPrefab = levelPrefab;
             FieldSize = new int[2] { lines, columns };
+            FieldState = new Dictionary<int, CellState>();
         }
 
         #endregion
@@ -25,7 +31,14 @@ namespace MVVM
 
         #region Methods
 
-
+        public void UpdateCellState(int cellIndex, CellState cellState)
+        {
+            if (!cellState.Equals(CellState.Changing))
+            {
+                FieldState[cellIndex] = cellState;
+                OnCellStateChanged(cellIndex, cellState);
+            }
+        }
 
         #endregion
     }

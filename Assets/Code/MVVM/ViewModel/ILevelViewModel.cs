@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+﻿using System;
 
 
 namespace MVVM
@@ -6,15 +6,16 @@ namespace MVVM
     internal interface ILevelViewModel
     {
         ILevelModel LevelModel { get; }
-        IInputProxy PlayerInput { get; }
+        IInputViewModel UIInput { get; }
+        IDotsViewModel DotsViewModel { get; }
+        bool IsEmpty { get; }
+        event Action<int> OnCellChange;
 
         void InstantiateView(ILevelViewModel levelViewModel, int cellCount, bool isEmpty);
-        void InitializeInput(IInputProxy input);
+        void InitializeInput(IInputViewModel input);
+        void InitializeDots(IDotsViewModel dotsViewModel);
         void RestartButtonHandle();
         void MenuButtonHandle();
 
-        List<ILevelView> Views { get; }
-        int[,] FieldMap { get; }
-        bool IsEmpty { get; }
     }
 }

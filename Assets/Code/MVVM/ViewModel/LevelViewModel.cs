@@ -1,6 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
 using UnityEngine;
-using UnityEngine.EventSystems;
 
 
 namespace MVVM
@@ -20,27 +19,29 @@ namespace MVVM
         #region Properties
 
         public ILevelModel LevelModel { get; }
-        public IInputProxy PlayerInput { get; }
-        public List<ILevelView> Views { get; }
-        public int[,] FieldMap { get; } 
+        public IInputViewModel UIInput { get; }
+        public IDotsViewModel DotsViewModel { get; private set; }
         public bool IsEmpty { get; }
+        public event Action<int> OnCellChange;
+
+        private int[] DotsMap { get; set; } 
 
         #endregion
 
 
         #region ClassLifeCycles
 
-        internal LevelViewModel(ILevelModel model, IInputProxy input, bool isEmpty = true)
+        internal LevelViewModel(ILevelModel model, IInputViewModel input, bool isEmpty = true)
         {
             _rayCastPosition = Vector3.forward;
             _rayCastPosition.z = Camera.main.farClipPlane;
 
-            Views = new List<ILevelView>();
-
             LevelModel = model;
+            LevelModel.OnCellStateChanged += CellStateUpdated;
+
             IsEmpty = isEmpty;
-            PlayerInput = input;
-            InitializeInput(PlayerInput);
+            UIInput = input;
+            InitializeInput(UIInput);
 
             var cellCount = LevelModel.FieldSize[0] * LevelModel.FieldSize[1];
 
@@ -49,7 +50,9 @@ namespace MVVM
 
         ~LevelViewModel()
         {
-            PlayerInput.TouchOnComplete -= TouchHandler;
+            UIInput.OnUITouchBegan -= UIInputHandler;
+            UIInput.OnPlayingFieldTouchBegan -= PlayingFieldInputHandler;
+            LevelModel.OnCellStateChanged -= CellStateUpdated;
         }
 
         #endregion
@@ -58,19 +61,55 @@ namespace MVVM
         #region Methods
 
         public void InstantiateView(ILevelViewModel levelViewModel, int cellCount, bool isEmpty)
-        {
-            
+        {            
             var go = GameObject.Instantiate(levelViewModel.LevelModel.LevelViewPrefab);
             var view = go.GetComponent<ILevelView>();
             view.Initialize(levelViewModel, cellCount, isEmpty);
             view.MainCanvas.enabled = true;
-
-            Views.Add(view);
         }
 
-        public void InitializeInput(IInputProxy input)
+        public void InitializeInput(IInputViewModel input)
         {
-            input.TouchOnComplete += TouchHandler;
+            input.OnUITouchBegan += UIInputHandler;
+            input.OnPlayingFieldTouchBegan += PlayingFieldInputHandler;
+        }
+
+        private void UIInputHandler(int gameObjectInstanceID)
+        {
+            Debug.Log($"Touch UI with ID:{gameObjectInstanceID}");
+        }
+
+        private void PlayingFieldInputHandler(int gameObjectInstanceID)
+        {
+            OnCellChange.Invoke(gameObjectInstanceID);
+        }
+
+        public void InitializeDots(IDotsViewModel dotsViewModel)
+        {
+            DotsViewModel = dotsViewModel;
+            GenerateDotsMap(DotsViewModel.DotsModel.DotsProperties.DefaultIntDotsCount); // вынести в отдельное свойство! LevelViewModel не доллжен знать о DotsModel, так же как и DotsViewModel
+            for (int i = 0; i < DotsMap.Length; i++)
+            {
+                var go = GameObject.Instantiate(dotsViewModel.DotsModel.DotsProperties.DotPrefab);
+                
+            }
+        }
+
+        private void GenerateDotsMap(int dotsCount)
+        {
+            DotsMap = new int[LevelModel.FieldSize[0]]; // вынести FieldSize в отдельное свойство, для избежания NRE
+            for (int i = 0; i < DotsMap.Length; i++)
+            {
+                if (dotsCount > 0)
+                {
+                    DotsMap[i] = _random.Next(0, 1);
+                }
+            }
+        }
+
+        private void CellStateUpdated(int index, CellState state)
+        {
+
         }
 
         public void RestartButtonHandle()
@@ -88,27 +127,6 @@ namespace MVVM
             #endif
             throw new System.NotImplementedException("Menu button not implemented");
         }
-
-        private void TouchHandler(Touch[] touches)
-        {
-            for (int i = 0; i < touches.Length; i++)
-            {
-                Vector3 touchPosition = Camera.main.ScreenToWorldPoint(Input.touches[i].position);
-                touchPosition.z = Camera.main.transform.position.z;
-                Debug.DrawRay(touchPosition, _rayCastPosition);
-
-                if (Views[0].HideCellByName(PlayerInput.StandaloneInputModule.GetHovered().name))
-                {
-                    Debug.Log($"{PlayerInput.StandaloneInputModule.GetHovered().name} hided");
-                    #if !UNITY_EDITOR && UNITY_ANDROID
-                    ShowAndroidToastMessage($"{PlayerInput.StandaloneInputModule.GetHovered().name} hided");
-                    #endif
-                }
-                //Debug.Log($"{PlayerInput.StandaloneInputModule.GetHovered().name}");
-                
-            }
-        }
-
 
         #if !UNITY_EDITOR && UNITY_ANDROID
         private void ShowAndroidToastMessage(string message)

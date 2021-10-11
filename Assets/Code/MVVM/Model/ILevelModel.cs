@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using UnityEngine;
 
 
@@ -8,11 +7,12 @@ namespace MVVM
     internal interface ILevelModel
     {
         GameObject LevelViewPrefab { get; }
-        Dictionary<int, CellState> FieldState { get; }
-        int [] FieldSize { get; }
+        ViewProperties ViewProperties { get; }
 
-        event Action<int, CellState> OnCellStateChanged;
+        event Action<Vector2Int, CellState> OnCellStateChanged;
 
-        void UpdateCellState(int cellIndex, CellState cellState);
+        void AssignViewModel(ILevelViewModel levelViewModel);
+        void DisassignViewModel(ILevelViewModel levelViewModel);
+        void UpdateCellState(Vector2Int cellIndex, CellState cellState);
     }
 }

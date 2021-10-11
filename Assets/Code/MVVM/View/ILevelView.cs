@@ -1,11 +1,14 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
+
 
 namespace MVVM
 {
     internal interface ILevelView
     {
-        Canvas MainCanvas { get; }
+        ViewProperties CurrentViewProperties { get; }
+        event Action<Rect> SetUpResolution;
 
-        void Initialize(ILevelViewModel levelViewModel, int cellCount, bool isEmprty);
+        void Initialize(ILevelViewModel levelViewModel, ViewProperties viewProperties);
     }
 }

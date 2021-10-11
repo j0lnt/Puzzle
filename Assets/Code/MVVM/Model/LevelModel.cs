@@ -10,9 +10,9 @@ namespace MVVM
         #region Properties
 
         public GameObject LevelViewPrefab { get; }
-        public Dictionary<int, CellState> FieldState { get; }
-        public int[] FieldSize { get; }
-        public event Action<int, CellState> OnCellStateChanged;
+        public ViewProperties ViewProperties { get; private set; }
+
+        public event Action<Vector2Int, CellState> OnCellStateChanged;
 
         #endregion
 
@@ -22,8 +22,17 @@ namespace MVVM
         internal LevelModel(GameObject levelPrefab, int lines = 10, int columns = 10)
         {
             LevelViewPrefab = levelPrefab;
-            FieldSize = new int[2] { lines, columns };
-            FieldState = new Dictionary<int, CellState>();
+            ViewProperties = new ViewProperties
+            {
+                Resolution = new Rect(),
+                FieldProperties = new FieldProperties
+                {
+                    FieldSize = new Vector2Int(lines, columns),
+                    FieldMap = new Dictionary<Vector2Int, CellState>()
+                },
+                Visibility = true,
+                Fullness = 0.0f
+            };
         }
 
         #endregion
@@ -31,13 +40,33 @@ namespace MVVM
 
         #region Methods
 
-        public void UpdateCellState(int cellIndex, CellState cellState)
+        public void UpdateCellState(Vector2Int cellIndex, CellState cellState)
         {
             if (!cellState.Equals(CellState.Changing))
             {
-                FieldState[cellIndex] = cellState;
+                ViewProperties.FieldProperties.FieldMap[cellIndex] = cellState;
                 OnCellStateChanged(cellIndex, cellState);
             }
+        }
+
+        public void AssignViewModel(ILevelViewModel levelViewModel)
+        {
+            levelViewModel.OnResolutionChanged += ChangeResolutionProperties;
+        }
+
+        private void ChangeResolutionProperties(Rect resolution)
+        {
+            ViewProperties = new ViewProperties {
+                Resolution = resolution,
+                FieldProperties = ViewProperties.FieldProperties,
+                Visibility = ViewProperties.Visibility,
+                Fullness = ViewProperties.Fullness
+            };
+        }
+
+        public void DisassignViewModel(ILevelViewModel levelViewModel)
+        {
+            levelViewModel.OnResolutionChanged -= ChangeResolutionProperties;
         }
 
         #endregion

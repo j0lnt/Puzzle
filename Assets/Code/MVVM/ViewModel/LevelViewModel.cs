@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 
@@ -10,9 +11,6 @@ namespace MVVM
 
         private System.Random _random = new System.Random();
 
-        private RaycastHit _raycastHit;
-        private Vector3 _rayCastPosition;
-
         #endregion
 
 
@@ -21,31 +19,31 @@ namespace MVVM
         public ILevelModel LevelModel { get; }
         public IInputViewModel UIInput { get; }
         public IDotsViewModel DotsViewModel { get; private set; }
-        public bool IsEmpty { get; }
         public event Action<int> OnCellChange;
+        public event Action<Rect> OnResolutionChanged;
+        public event Action<Rect> UpdateView;
 
-        private int[] DotsMap { get; set; } 
+        private Dictionary<Vector2Int, int> DotsMap { get; set; } 
 
         #endregion
 
 
         #region ClassLifeCycles
 
-        internal LevelViewModel(ILevelModel model, IInputViewModel input, bool isEmpty = true)
+        internal LevelViewModel(ILevelModel model, IInputViewModel input, IDotsModel dotsModel)
         {
-            _rayCastPosition = Vector3.forward;
-            _rayCastPosition.z = Camera.main.farClipPlane;
-
             LevelModel = model;
+            LevelModel.AssignViewModel(this);
+            //OnResolutionChanged.Invoke
             LevelModel.OnCellStateChanged += CellStateUpdated;
 
-            IsEmpty = isEmpty;
             UIInput = input;
             InitializeInput(UIInput);
 
-            var cellCount = LevelModel.FieldSize[0] * LevelModel.FieldSize[1];
+            InstantiateView(this);
 
-            InstantiateView(this, cellCount, IsEmpty);
+            DotsViewModel = new DotsViewModel(dotsModel, this);
+            InitializeDots(DotsViewModel);
         }
 
         ~LevelViewModel()
@@ -53,6 +51,7 @@ namespace MVVM
             UIInput.OnUITouchBegan -= UIInputHandler;
             UIInput.OnPlayingFieldTouchBegan -= PlayingFieldInputHandler;
             LevelModel.OnCellStateChanged -= CellStateUpdated;
+            LevelModel.DisassignViewModel(this);
         }
 
         #endregion
@@ -60,12 +59,28 @@ namespace MVVM
 
         #region Methods
 
-        public void InstantiateView(ILevelViewModel levelViewModel, int cellCount, bool isEmpty)
+        public void InstantiateView(ILevelViewModel levelViewModel)
         {            
             var go = GameObject.Instantiate(levelViewModel.LevelModel.LevelViewPrefab);
             var view = go.GetComponent<ILevelView>();
-            view.Initialize(levelViewModel, cellCount, isEmpty);
-            view.MainCanvas.enabled = true;
+            AssignView(view);
+            view.Initialize(levelViewModel, LevelModel.ViewProperties);
+        }
+
+        public void AssignView(ILevelView levelView)
+        {
+            levelView.SetUpResolution += ChangeResolution;
+        }
+
+        private void ChangeResolution(Rect resolution)
+        {
+            OnResolutionChanged.Invoke(resolution);
+            UpdateView.Invoke(resolution);
+        }
+
+        public void DisassignView(ILevelView levelView)
+        {
+            levelView.SetUpResolution -= ChangeResolution;
         }
 
         public void InitializeInput(IInputViewModel input)
@@ -87,27 +102,45 @@ namespace MVVM
         public void InitializeDots(IDotsViewModel dotsViewModel)
         {
             DotsViewModel = dotsViewModel;
-            GenerateDotsMap(DotsViewModel.DotsModel.DotsProperties.DefaultIntDotsCount); // вынести в отдельное свойство! LevelViewModel не доллжен знать о DotsModel, так же как и DotsViewModel
-            for (int i = 0; i < DotsMap.Length; i++)
-            {
-                var go = GameObject.Instantiate(dotsViewModel.DotsModel.DotsProperties.DotPrefab);
-                
-            }
-        }
+            GenerateDotsMap(LevelModel.ViewProperties);
 
-        private void GenerateDotsMap(int dotsCount)
-        {
-            DotsMap = new int[LevelModel.FieldSize[0]]; // вынести FieldSize в отдельное свойство, для избежания NRE
-            for (int i = 0; i < DotsMap.Length; i++)
+            for (int xPos = 0; xPos < LevelModel.ViewProperties.FieldProperties.FieldSize.x; xPos++)
             {
-                if (dotsCount > 0)
+                for (int yPos = 0; yPos < LevelModel.ViewProperties.FieldProperties.FieldSize.y; yPos++)
                 {
-                    DotsMap[i] = _random.Next(0, 1);
+                    var currentPos = new Vector2Int(xPos, yPos);
+                    if (DotsMap[currentPos] == 1)
+                    {
+                        var go = GameObject.Instantiate(dotsViewModel.DotsModel.DotsProperties.DotPrefab);
+                        go.name = $"[{xPos},{yPos}]ball";
+                        //go.transform.position = 
+                    }
                 }
             }
         }
 
-        private void CellStateUpdated(int index, CellState state)
+        private void GenerateDotsMap(ViewProperties viewProperties)
+        {
+            DotsMap = new Dictionary<Vector2Int, int>();
+            var fieldCompletness = 0 / (viewProperties.FieldProperties.FieldMap.Count);
+            for (int xPos = 0; xPos < viewProperties.FieldProperties.FieldSize.x; xPos++)
+            {
+                for (int yPos = 0; yPos < viewProperties.FieldProperties.FieldSize.y; yPos++)
+                {
+                    var currentPos = new Vector2Int(xPos, yPos);
+                    if (viewProperties.FieldProperties.FieldMap[currentPos].Equals(CellState.Empty))
+                    {
+                        if (_random.Next(0, 1).Equals(1))
+                        {
+                            DotsMap[currentPos] = 1;
+                            fieldCompletness = 1 / viewProperties.FieldProperties.FieldMap.Count;
+                        }
+                    }
+                }
+            }
+        }
+
+        private void CellStateUpdated(Vector2Int index, CellState state)
         {
 
         }

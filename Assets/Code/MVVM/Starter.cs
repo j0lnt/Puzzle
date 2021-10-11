@@ -15,6 +15,7 @@ namespace MVVM
         private InputViewModel _input;
         private ILevelModel _levelModel;
         private ILevelViewModel _levelViewModel;
+        private IDotsModel _dotsModel;
         private List<IExecutable> _executables;
 
         #endregion
@@ -32,7 +33,13 @@ namespace MVVM
             _executables.Add(_input);
 
             _levelModel = new LevelModel(_resourceLoader.LoadPrefab("level_ui_template"));
-            _levelViewModel = new LevelViewModel(_levelModel, _input, transform);
+            _dotsModel = new DotsModel(new DotsProperties {
+                Colors = new Color[] { Color.white, Color.black},
+                DefaultIntDotsCount = 10,
+                DefaultDecimalCount = 0.1m,
+                DotPrefab = _resourceLoader.LoadPrefab("ball")
+            });
+            _levelViewModel = new LevelViewModel(_levelModel, _input, _dotsModel);
 
         }
 

@@ -1,5 +1,5 @@
 ﻿using System;
-
+using UnityEngine;
 
 namespace MVVM
 {
@@ -8,14 +8,16 @@ namespace MVVM
         ILevelModel LevelModel { get; }
         IInputViewModel UIInput { get; }
         IDotsViewModel DotsViewModel { get; }
-        bool IsEmpty { get; }
         event Action<int> OnCellChange;
+        event Action<Rect> OnResolutionChanged;
+        event Action<Rect> UpdateView;
 
-        void InstantiateView(ILevelViewModel levelViewModel, int cellCount, bool isEmpty);
+        void InstantiateView(ILevelViewModel levelViewModel);
+        void AssignView(ILevelView levelView);
+        void DisassignView(ILevelView levelView);
         void InitializeInput(IInputViewModel input);
         void InitializeDots(IDotsViewModel dotsViewModel);
         void RestartButtonHandle();
         void MenuButtonHandle();
-
     }
 }

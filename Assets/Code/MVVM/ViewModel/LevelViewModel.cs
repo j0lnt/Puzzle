@@ -9,7 +9,7 @@ namespace MVVM
     {
         #region Fields
 
-        private System.Random _random = new System.Random();
+        private static System.Random _random = new System.Random();
 
         #endregion
 
@@ -22,6 +22,7 @@ namespace MVVM
         public event Action<int> OnCellChange;
         public event Action<Rect> OnResolutionChanged;
         public event Action<Rect> UpdateView;
+        public event Action<Vector2Int, GameObject, Color> OnBallSpawned;
 
         private Dictionary<Vector2Int, int> DotsMap { get; set; } 
 
@@ -60,7 +61,8 @@ namespace MVVM
         #region Methods
 
         public void InstantiateView(ILevelViewModel levelViewModel)
-        {            
+        {
+            
             var go = GameObject.Instantiate(levelViewModel.LevelModel.LevelViewPrefab);
             var view = go.GetComponent<ILevelView>();
             AssignView(view);
@@ -111,8 +113,9 @@ namespace MVVM
                     var currentPos = new Vector2Int(xPos, yPos);
                     if (DotsMap[currentPos] == 1)
                     {
-                        var go = GameObject.Instantiate(dotsViewModel.DotsModel.DotsProperties.DotPrefab);
-                        go.name = $"[{xPos},{yPos}]ball";
+                        OnBallSpawned.Invoke(currentPos, dotsViewModel.DotsModel.DotsProperties.DotPrefab, Color.red); // debug test
+                        //var go = GameObject.Instantiate(dotsViewModel.DotsModel.DotsProperties.DotPrefab);
+                        //go.name = $"[{xPos},{yPos}]ball";
                         //go.transform.position = 
                     }
                 }
@@ -130,10 +133,14 @@ namespace MVVM
                     var currentPos = new Vector2Int(xPos, yPos);
                     if (viewProperties.FieldProperties.FieldMap[currentPos].Equals(CellState.Empty))
                     {
-                        if (_random.Next(0, 1).Equals(1))
+                        if (_random.Next()%2 > 0)
                         {
                             DotsMap[currentPos] = 1;
-                            fieldCompletness = 1 / viewProperties.FieldProperties.FieldMap.Count;
+                            fieldCompletness += 1 / viewProperties.FieldProperties.FieldMap.Count;
+                        }
+                        else
+                        {
+                            DotsMap[currentPos] = 0;
                         }
                     }
                 }

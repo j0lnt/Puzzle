@@ -25,11 +25,7 @@ namespace MVVM
             ViewProperties = new ViewProperties
             {
                 Resolution = new Rect(),
-                FieldProperties = new FieldProperties
-                {
-                    FieldSize = new Vector2Int(lines, columns),
-                    FieldMap = new Dictionary<Vector2Int, CellState>()
-                },
+                FieldProperties =  GenerateFieldProperties(lines, columns),
                 Visibility = true,
                 Fullness = 0.0f
             };
@@ -52,6 +48,27 @@ namespace MVVM
         public void AssignViewModel(ILevelViewModel levelViewModel)
         {
             levelViewModel.OnResolutionChanged += ChangeResolutionProperties;
+        }
+
+        private FieldProperties GenerateFieldProperties(int lines, int columns)
+        {
+            var map = new Dictionary<Vector2Int, CellState>();
+            for (int xPos = 0; xPos < lines; xPos++)
+            {
+                for (int yPos = 0; yPos < columns; yPos++)
+                {
+                    var currentPos = new Vector2Int(xPos, yPos);
+                    map.Add(currentPos, CellState.Empty);
+                }
+            }
+
+            var fieldProp = new FieldProperties
+            {
+                FieldSize = new Vector2Int(lines, columns),
+                FieldMap = map
+            };                
+
+            return fieldProp;
         }
 
         private void ChangeResolutionProperties(Rect resolution)

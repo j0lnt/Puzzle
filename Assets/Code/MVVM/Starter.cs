@@ -37,7 +37,7 @@ namespace MVVM
                 Colors = new Color[] { Color.white, Color.black},
                 DefaultIntDotsCount = 10,
                 DefaultDecimalCount = 0.1m,
-                DotPrefab = _resourceLoader.LoadPrefab("ball")
+                DotPrefab = _resourceLoader.LoadPrefab("dot")
             });
             _levelViewModel = new LevelViewModel(_levelModel, _input, _dotsModel);
 

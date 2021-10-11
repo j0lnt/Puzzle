@@ -11,6 +11,7 @@ namespace MVVM
         event Action<int> OnCellChange;
         event Action<Rect> OnResolutionChanged;
         event Action<Rect> UpdateView;
+        event Action<Vector2Int, GameObject, Color> OnBallSpawned;
 
         void InstantiateView(ILevelViewModel levelViewModel);
         void AssignView(ILevelView levelView);

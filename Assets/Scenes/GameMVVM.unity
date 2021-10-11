@@ -233,7 +233,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: abc0eebb55e125247a7a8cb0828dda93, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  EventSystem: {fileID: 2030708352}
   CustomStandaloneInputModule: {fileID: 2030708351}
 --- !u!4 &1209152628
 Transform:
